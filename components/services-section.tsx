@@ -1,18 +1,17 @@
 "use client"
 
 import { useRef, useState, useEffect } from "react"
+import Image from "next/image"
 import { useAnimeOnScroll } from "@/hooks/use-anime-on-scroll"
 import ServiceModal from "./service-modal"
-import { flags, getCurrencyInfo } from "./header"
+import { getCurrencyInfo } from "./header"
 import servicePrices from "@/lib/service-prices.json"
 
 // Define types for platforms and prices
-const platforms = ["Instagram", "YouTube", "Twitter", "Facebook", "TikTok"] as const;
-type Platform = typeof platforms[number];
-type ServicePrices = typeof servicePrices;
-type PriceKeys = keyof ServicePrices[Platform];
+type Platform = "Instagram" | "YouTube" | "Twitter" | "Facebook" | "TikTok";
 
-const socialServices = [
+
+const socialServices: SocialService[] = [
 	{
 		platform: "Instagram",
 		iconUrl: "/instagram.png?width=40",
@@ -48,19 +47,29 @@ const socialServices = [
 		description: "Go viral with followers, likes, and video views.",
 		category: "social",
 	},
-]
+];
+
+interface SocialService {
+	platform: Platform;
+	iconUrl: string;
+	color: string;
+	description: string;
+	category: string;
+}
+
+interface ServiceCardProps {
+	service: SocialService;
+	index: number;
+	openModal: (service: SocialService) => void;
+	prices: Record<string, number>;
+}
 
 const ServiceCard = ({
 	service,
 	index,
 	openModal,
 	prices,
-}: {
-	service: any
-	index: number
-	openModal: (service: any) => void
-	prices: Record<string, number>
-}) => {
+}: ServiceCardProps) => {
 	const cardRef = useRef(null)
 	const [isVisible, setIsVisible] = useState(false)
 
@@ -97,72 +106,69 @@ const ServiceCard = ({
 	return (
 		<div
 			ref={cardRef}
-			className={`bg-dark-gray/50 border border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-2xl shadow-black/20 overflow-hidden relative group transition-all duration-500 hover:border-primary/50 hover:-translate-y-2 cursor-pointer min-h-[280px] transform ${
-				isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
-			}`}
+			className="bg-dark-gray/50 border border-white/10 rounded-2xl p-6 backdrop-blur-xl overflow-hidden relative group hover:border-primary/50 hover:-translate-y-2 cursor-pointer min-h-[280px]"
 			onClick={() => openModal(service)}
-			style={{
-				transitionDelay: `${index * 100}ms`,
-			}}
+			style={{ transitionDelay: `${index * 100}ms` }}
 		>
-			<div
-				className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${service.color} opacity-70 group-hover:opacity-100 transition-opacity`}
-			></div>
-			<div className="flex flex-col h-full">
-				<div className="flex items-center gap-4 mb-4">
-					<div className="w-10 h-10 flex-shrink-0 rounded-lg overflow-hidden bg-white/10 flex items-center justify-center">
-						<img
-							src={service.iconUrl || "/placeholder.svg"}
-							alt={`${service.platform} icon`}
-							className={`w-8 h-8 object-contain${service.platform === "Facebook" ? " rounded" : ""}`}
-							onError={(e) => {
-								const target = e.target as HTMLImageElement;
-								target.style.display = "none";
-								const parent = target.parentElement;
-								if (parent) {
-									parent.innerHTML = `<div class='w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm'>${service.platform.charAt(0)}</div>`;
-								}
-							}}
-						/>
+			<div className={`transition-all duration-1000 ease-out transform ${isVisible ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-16 scale-95"}`}>
+				<div className="flex flex-col h-full">
+					<div className="flex items-center gap-4 mb-4">
+						<div className="w-10 h-10 flex-shrink-0 rounded-lg overflow-hidden bg-white/10 flex items-center justify-center">
+							<Image
+								src={service.iconUrl || "/placeholder.svg"}
+								alt={`${service.platform} icon`}
+								width={32}
+								height={32}
+								className={`w-8 h-8 object-contain${service.platform === "Facebook" ? " rounded" : ""}`}
+								onError={(e) => {
+									const target = e.target as HTMLImageElement;
+									target.style.display = "none";
+									const parent = target.parentElement;
+									if (parent) {
+										parent.innerHTML = `<div class='w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm'>${service.platform.charAt(0)}</div>`;
+									}
+								}}
+							/>
+						</div>
+						<div className="min-w-0 flex-1">
+							<h3 className="text-xl font-bold text-white">
+								{service.platform}
+							</h3>
+							<span className="text-xs text-secondary uppercase tracking-wider">
+								Social Growth
+							</span>
+						</div>
 					</div>
-					<div className="min-w-0 flex-1">
-						<h3 className="text-xl font-bold text-white">
-							{service.platform}
-						</h3>
-						<span className="text-xs text-secondary uppercase tracking-wider">
-							Social Growth
-						</span>
+					<p className="text-gray-400 flex-grow mb-4 text-sm leading-relaxed">
+						{service.description}
+					</p>
+					<div className="space-y-2">
+						<div className="flex justify-between items-center text-sm">
+							<span className="text-gray-400">{firstMetricLabel}</span>
+							<span className="text-primary font-semibold">
+								From {symbol}
+								{prices[firstMetricKey] !== undefined ? (prices[firstMetricKey] * rate).toLocaleString(undefined, { maximumFractionDigits: 3 }) : "-"}
+							</span>
+						</div>
+						<div className="flex justify-between items-center text-sm">
+							<span className="text-gray-400">Likes</span>
+							<span className="text-primary font-semibold">
+								From {symbol}
+								{prices.like !== undefined ? (prices.like * rate).toLocaleString(undefined, { maximumFractionDigits: 3 }) : "-"}
+							</span>
+						</div>
+						<div className="flex justify-between items-center text-sm">
+							<span className="text-gray-400">Views</span>
+							<span className="text-primary font-semibold">
+								From {symbol}
+								{prices.view !== undefined ? (prices.view * rate).toLocaleString(undefined, { maximumFractionDigits: 3 }) : "-"}
+							</span>
+						</div>
 					</div>
-				</div>
-				<p className="text-gray-400 flex-grow mb-4 text-sm leading-relaxed">
-					{service.description}
-				</p>
-				<div className="space-y-2">
-					<div className="flex justify-between items-center text-sm">
-						<span className="text-gray-400">{firstMetricLabel}</span>
-						<span className="text-primary font-semibold">
-							From {symbol}
-							{prices[firstMetricKey] !== undefined ? (prices[firstMetricKey] * rate).toLocaleString(undefined, { maximumFractionDigits: 3 }) : "-"}
-						</span>
-					</div>
-					<div className="flex justify-between items-center text-sm">
-						<span className="text-gray-400">Likes</span>
-						<span className="text-primary font-semibold">
-							From {symbol}
-							{prices.like !== undefined ? (prices.like * rate).toLocaleString(undefined, { maximumFractionDigits: 3 }) : "-"}
-						</span>
-					</div>
-					<div className="flex justify-between items-center text-sm">
-						<span className="text-gray-400">Views</span>
-						<span className="text-primary font-semibold">
-							From {symbol}
-							{prices.view !== undefined ? (prices.view * rate).toLocaleString(undefined, { maximumFractionDigits: 3 }) : "-"}
-						</span>
-					</div>
-				</div>
-				<div className="mt-4 pt-4 border-t border-white/10">
-					<div className="text-xs text-gray-500 text-center">
-						Tap to configure and order
+					<div className="mt-4 pt-4 border-t border-white/10">
+						<div className="text-xs text-gray-500 text-center">
+							Tap to configure and order
+						</div>
 					</div>
 				</div>
 			</div>
@@ -171,13 +177,13 @@ const ServiceCard = ({
 }
 
 export default function ServicesSection() {
-	const titleRef = useRef<HTMLElement>(document.createElement('div'));
-	const socialTitleRef = useRef<HTMLElement>(document.createElement('div'));
+	const titleRef = useRef<HTMLElement | null>(null);
+	const socialTitleRef = useRef<HTMLElement | null>(null);
 
 	const [isModalOpen, setIsModalOpen] = useState(false)
-	const [selectedService, setSelectedService] = useState<any>(null)
+	const [selectedService, setSelectedService] = useState<SocialService | null>(null)
 
-	const openModal = (service: any) => {
+	const openModal = (service: SocialService) => {
 		setSelectedService(service)
 		setIsModalOpen(true)
 	}
@@ -187,18 +193,9 @@ export default function ServicesSection() {
 		setSelectedService(null)
 	}
 
-	useAnimeOnScroll(titleRef, {
-		translateY: [50, 0],
-		opacity: [0, 1],
-		duration: 1000,
-	})
-
-	useAnimeOnScroll(socialTitleRef, {
-		translateY: [30, 0],
-		opacity: [0, 1],
-		duration: 800,
-		delay: 200,
-	})
+	// Move useAnimeOnScroll to the top level, not inside useEffect or callbacks
+	useAnimeOnScroll(titleRef as React.RefObject<HTMLElement>);
+	useAnimeOnScroll(socialTitleRef as React.RefObject<HTMLElement>);
 
 	return (
 		<section id="services" className="w-full py-16 md:py-24 px-4">
@@ -220,7 +217,7 @@ export default function ServicesSection() {
 				</div>
 
 				{/* Social Media Services */}
-				<div ref={socialTitleRef as React.RefObject<HTMLDivElement>} className="opacity-0">
+				<div ref={socialTitleRef as React.RefObject<HTMLDivElement>} className="opacity-100">
 					<h3 className="text-2xl md:text-3xl font-bold text-white mb-2 text-center">
 						Social Media Growth
 					</h3>

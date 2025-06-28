@@ -2,6 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+
+/* Hydration debug outline */
+[data-hydration-error] {
+  outline: 2px solid red !important;
+}
+
+/* SocialIcon SSR-safe animation/transition */
+.social-icon {
+  animation: none;
+  transform: scale(0);
+  opacity: 0;
+}
+.social-icon[data-mounted="true"] {
+  animation: float 6s ease-in-out infinite;
+  transform: scale(1);
+  opacity: 1;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-10px) scale(1.03);
+  }
+}
+
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -14,14 +41,14 @@ body {
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
+    --background: 162 48% 83%; /* #b3e6da */
+    --foreground: 162 80% 10%; /* dark teal for contrast */
+    --card: 162 48% 83%; /* #b3e6da */
+    --card-foreground: 162 80% 10%;
+    --popover: 162 48% 83%;
+    --popover-foreground: 162 80% 10%;
+    --primary: 162 48% 83%; /* #b3e6da */
+    --primary-foreground: 162 80% 10%; /* dark teal for contrast */
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
@@ -49,14 +76,14 @@ body {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
+    --background: 162 48% 83%; /* #b3e6da */
+    --foreground: 162 80% 10%; /* dark teal for contrast */
+    --card: 162 48% 83%; /* #b3e6da */
+    --card-foreground: 162 80% 10%;
+    --popover: 162 48% 83%;
+    --popover-foreground: 162 80% 10%;
+    --primary: 162 48% 83%; /* #b3e6da */
+    --primary-foreground: 162 80% 10%; /* dark teal for contrast */
     --secondary: 0 0% 14.9%;
     --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 14.9%;

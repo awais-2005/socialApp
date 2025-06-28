@@ -13,7 +13,7 @@ interface EasypaisaPaymentFormProps {
     quantity: string
     serviceUrl: string
   }
-  onPaymentInitiated: (paymentData: any) => void
+  onPaymentInitiated: (paymentData: Record<string, unknown>) => void
   isAnimating?: boolean
 }
 
@@ -83,7 +83,7 @@ export default function EasypaisaPaymentForm({
     }
   }
 
-  const createEasypaisaForm = (paymentData: any, redirectUrl: string) => {
+  const createEasypaisaForm = (paymentData: Record<string, string | number | boolean>, redirectUrl: string) => {
     // Create a hidden form to submit to Easypaisa
     const form = document.createElement("form")
     form.method = "POST"
@@ -203,10 +203,10 @@ export default function EasypaisaPaymentForm({
           <div className="space-y-2">
             <h4 className="text-white font-medium text-sm">Payment Process</h4>
             <ol className="text-gray-400 text-xs space-y-1 list-decimal list-inside">
-              <li>Click "Pay with Easypaisa" to proceed</li>
-              <li>You'll be redirected to Easypaisa payment page</li>
+              <li>Click &quot;Pay with Easypaisa&quot; to proceed</li>
+              <li>You&apos;ll be redirected to Easypaisa payment page</li>
               <li>Enter your Easypaisa PIN to complete payment</li>
-              <li>You'll receive confirmation via SMS</li>
+              <li>You&apos;ll receive confirmation via SMS</li>
             </ol>
           </div>
         </div>

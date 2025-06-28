@@ -12,7 +12,7 @@ export default function PaymentSuccessPage() {
 
         <h1 className="text-2xl font-bold text-white mb-4">Payment Successful!</h1>
         <p className="text-gray-400 mb-6">
-          Your order has been confirmed and will be processed within 24 hours. You'll receive updates via SMS and email.
+          Your order has been confirmed and will be processed within 24 hours. You&apos;ll receive updates via SMS and email.
         </p>
 
         <div className="space-y-3">

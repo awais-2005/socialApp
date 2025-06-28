@@ -83,6 +83,10 @@ const config = {
           "0%, 100%": { opacity: "0.5", transform: "scale(1)" },
           "50%": { opacity: "0.7", transform: "scale(1.05)" },
         },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",

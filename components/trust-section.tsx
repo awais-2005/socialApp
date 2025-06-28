@@ -1,8 +1,9 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, useState, useEffect } from "react"
 import { ShieldCheck, Star, Users, Award, Zap, Clock } from "lucide-react"
 import { useAnimeOnScroll } from "@/hooks/use-anime-on-scroll"
+import { Badge } from "@/components/ui/badge"
 
 const trustFeatures = [
 	{
@@ -48,6 +49,8 @@ const trustFeatures = [
 	},
 ]
 
+
+
 const TrustCard = ({
 	feature,
 	index,
@@ -56,15 +59,28 @@ const TrustCard = ({
 	index: number
 }) => {
 	const cardRef = useRef<HTMLDivElement>(null)
-	useAnimeOnScroll(cardRef as React.RefObject<HTMLElement>, {
-		scale: [0.7, 1],
-		opacity: [0, 1],
-		duration: 800,
-		delay: index * 150,
-	})
+	const [isVisible, setIsVisible] = useState(false)
+
+	useEffect(() => {
+		const observer = new window.IntersectionObserver(
+			([entry]) => {
+				if (entry.isIntersecting) {
+					setIsVisible(true)
+					observer.unobserve(entry.target)
+				}
+			},
+			{ threshold: 0.1 }
+		)
+		if (cardRef.current) {
+			observer.observe(cardRef.current)
+		}
+		return () => observer.disconnect()
+	}, [])
 
 	return (
-		<div ref={cardRef} className="trust-card opacity-0 text-center p-6">
+	<div ref={cardRef} className="trust-card text-center p-6">
+		<div className={`transition-all duration-1000 ease-out transform ${isVisible ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-16 scale-95"}`}>
+			
 			<div
 				className={`inline-flex p-4 bg-dark-gray rounded-full border border-white/10 mb-4 ${feature.color}`}
 			>
@@ -75,21 +91,20 @@ const TrustCard = ({
 			</h3>
 			<p className="text-gray-400">{feature.description}</p>
 		</div>
-	)
+	</div>
+)
 }
 
 export default function TrustSection() {
 	const titleRef = useRef<HTMLDivElement>(null)
 	useAnimeOnScroll(titleRef as React.RefObject<HTMLElement>, {
-		translateY: [50, 0],
-		opacity: [0, 1],
-		duration: 1000,
+		threshold: 0.1
 	})
 
 	return (
 		<section id="about" className="py-24 px-4 bg-dark-gray/30">
 			<div className="container mx-auto">
-				<div ref={titleRef} className="text-center mb-16 opacity-0">
+				<div ref={titleRef} className="text-center mb-16 opacity-100">
 					<h2 className="text-4xl md:text-5xl font-extrabold text-white">
 						Built on{" "}
 						<span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
@@ -104,6 +119,7 @@ export default function TrustSection() {
 						We are committed to providing reliable services that deliver real
 						results for both social growth and entertainment access.
 					</p>
+					
 				</div>
 				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
 					{trustFeatures.map((feature, index) => (

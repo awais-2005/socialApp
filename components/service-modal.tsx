@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
@@ -11,7 +12,13 @@ import { getCurrencyInfo } from "./header"
 interface ServiceModalProps {
   isOpen: boolean
   onClose: () => void
-  service: any
+  service: {
+    platform: string;
+    iconUrl?: string;
+    color?: string;
+    description: string;
+    category: string;
+  } | null;
 }
 
 type ModalStep = "service" | "payment" | "details"
@@ -32,7 +39,7 @@ export default function ServiceModal({ isOpen, onClose, service }: ServiceModalP
     cvv: "",
     cardholderName: "",
   })
-  const [servicePrices, setServicePrices] = useState<any>({});
+  const [servicePrices, setServicePrices] = useState<Record<string, Record<string, number>>>({});
 
   useEffect(() => {
     if (isOpen) {
@@ -93,7 +100,7 @@ export default function ServiceModal({ isOpen, onClose, service }: ServiceModalP
     );
     const prices = platformKey ? servicePrices[platformKey] : {};
     // Helper to safely parse price, return null if invalid
-    const safeNumber = (val: any) => {
+    const safeNumber = (val: number | undefined | null) => {
       // Accept any number (including 0), only null for undefined or not a number
       return (val === undefined || val === null || isNaN(Number(val))) ? null : Number(val);
     };
@@ -150,7 +157,12 @@ export default function ServiceModal({ isOpen, onClose, service }: ServiceModalP
       return
     }
 
-    if (!serviceUrl.includes(service.platform.toLowerCase())) {
+    const platformKey = service.platform.toLowerCase();
+    if (
+      platformKey === "youtube"
+        ? !(serviceUrl.includes("youtube") || serviceUrl.includes("youtu.be"))
+        : !serviceUrl.includes(platformKey)
+    ) {
       setUrlError(`Please enter a valid ${service.platform} URL`)
       return
     }
@@ -171,7 +183,7 @@ export default function ServiceModal({ isOpen, onClose, service }: ServiceModalP
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleEasypaisaPayment = (paymentData: any) => {
+  const handleEasypaisaPayment = (paymentData: Record<string, unknown>) => {
     console.log("Easypaisa payment initiated:", paymentData)
     // The form submission to Easypaisa will happen automatically
     // You can add any additional tracking or analytics here
@@ -301,8 +313,15 @@ export default function ServiceModal({ isOpen, onClose, service }: ServiceModalP
                   const value = e.target.value
                   if (value && !value.startsWith("http")) {
                     setUrlError("URL must start with http:// or https://")
-                  } else if (value && !value.includes(service.platform.toLowerCase())) {
-                    setUrlError(`Please enter a valid ${service.platform} URL`)
+                  } else if (value) {
+                    const platformKey = service.platform.toLowerCase();
+                    if (
+                      platformKey === "youtube"
+                        ? !(value.includes("youtube") || value.includes("youtu.be"))
+                        : !value.includes(platformKey)
+                    ) {
+                      setUrlError(`Please enter a valid ${service.platform} URL`)
+                    }
                   }
                 }}
                 placeholder={
@@ -544,9 +563,11 @@ export default function ServiceModal({ isOpen, onClose, service }: ServiceModalP
               >
                 {service.iconUrl && (
                   <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg overflow-hidden bg-white/10 flex items-center justify-center">
-                    <img
+                    <Image
                       src={service.iconUrl || "/placeholder.svg"}
                       alt={`${service.platform} icon`}
+                      width={service.platform === "Facebook" ? 40 : 28} // Approximate based on usage
+                      height={service.platform === "Facebook" ? 40 : 28} // Approximate based on usage
                       className="w-6 h-6 md:w-7 md:h-7 object-contain"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement

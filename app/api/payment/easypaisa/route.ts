@@ -5,7 +5,7 @@ import { EASYPAISA_CONFIG } from "@/lib/easypaisa-config"
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { amount, service, option, quantity, serviceUrl, customerData } = body
+    const { amount, service, option, quantity, customerData } = body
 
     // Validate required fields
     if (!amount || !service || !option || !quantity) {

@@ -1,33 +1,44 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Instagram, Twitter, Youtube, Zap, Facebook } from "lucide-react"
+
+const baseClasses = "social-icon absolute w-12 h-12 md:w-14 md:h-14 border border-white/20 rounded-full flex items-center justify-center backdrop-blur-md transform scale-0 opacity-0 transition-all duration-1000 ease-out hover:scale-125 hover:border-white/40";
 
 const SocialIcon = ({
   icon: Icon,
-  className,
+  className = '',
   brandColor,
   ...props
 }: {
   icon: React.ElementType
   className?: string
   brandColor?: string
-  [key: string]: any
-}) => (
-  <div
-    className={`social-icon absolute w-12 h-12 md:w-14 md:h-14 border border-white/20 rounded-full flex items-center justify-center backdrop-blur-md transform scale-0 opacity-0 transition-all duration-1000 ease-out hover:scale-125 hover:border-white/40 ${className}`}
-    style={{
-      background: brandColor || "rgba(31, 41, 55, 0.5)",
-      animation: "float 6s ease-in-out infinite",
-      animationDelay: `${Math.random() * 3}s`,
-      boxShadow: `0 8px 32px ${brandColor ? brandColor + "40" : "rgba(0,0,0,0.3)"}`,
-    }}
-    {...props}
-  >
-    <Icon className="w-6 h-6 md:w-7 md:h-7 text-white drop-shadow-lg" />
-  </div>
-)
+} & React.HTMLAttributes<HTMLDivElement>) => {
+  // SSR-safe: data-mounted is false initially and set to true on load
+  const divRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (divRef.current) {
+      divRef.current.dataset.mounted = "true";
+    }
+  }, []);
+
+  return (
+    <div
+      ref={divRef}
+      className={`${baseClasses} ${className}`}
+      data-mounted="false"
+      style={{
+        background: brandColor || "rgba(31, 41, 55, 0.5)",
+        boxShadow: `0 8px 32px ${brandColor ? brandColor + "40" : "rgba(0,0,0,0.3)"}`,
+      }}
+      {...props}
+    >
+      <Icon className="w-6 h-6 md:w-7 md:h-7 text-white drop-shadow-lg" />
+    </div>
+  );
+};
 
 export default function HeroSection() {
   const heroRef = useRef(null)
