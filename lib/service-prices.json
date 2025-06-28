@@ -1,0 +1,27 @@
+{
+  "Instagram": {
+    "follower": 5,
+    "like": 0.002,
+    "view": 0.003
+  },
+  "YouTube": {
+    "subscriber": 0.005,
+    "like": 2,
+    "view": 0.003
+  },
+  "Twitter": {
+    "follower": 0.005,
+    "like": 0.002,
+    "view": 0.003
+  },
+  "Facebook": {
+    "follower": 0.005,
+    "like": 5.002,
+    "view": 0.003
+  },
+  "TikTok": {
+    "follower": 0.005,
+    "like": 0.002,
+    "view": 0.003
+  }
+}
