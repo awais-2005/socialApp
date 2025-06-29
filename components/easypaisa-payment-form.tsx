@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react";
+import FileUpload from "./file-upload";
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Smartphone, Loader2, Shield, Clock } from "lucide-react"
@@ -23,6 +24,16 @@ export default function EasypaisaPaymentForm({
   onPaymentInitiated,
   isAnimating = false,
 }: EasypaisaPaymentFormProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  // Offline payment: store_ID/hash_key are not available
+  const store_ID = "N/A";
+  const hash_key = "N/A";
+  const [offlineScreenshot, setOfflineScreenshot] = useState<File | null>(null);
+  const [offlineUploading, setOfflineUploading] = useState(false);
+  const [offlineError, setOfflineError] = useState<string | null>(null);
+  const [offlineSuccess, setOfflineSuccess] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("")
   const [email, setEmail] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
@@ -103,6 +114,122 @@ export default function EasypaisaPaymentForm({
 
     document.body.appendChild(form)
     form.submit()
+  }
+
+  // If store_ID/hash_key are not available, show offline payment UI
+  if (store_ID === "N/A" || hash_key === "N/A") {
+    return (
+      <div className="space-y-6">
+        {/* Apology/Notice for users */}
+        <div className="bg-yellow-900/40 border border-yellow-600/40 rounded-xl p-4 flex items-center gap-3">
+          <svg className="w-6 h-6 text-yellow-400 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01" /></svg>
+          <span className="text-yellow-200 text-sm font-medium">Sorry for the inconvenience. We are working on Easypaisa gateway for online direct transactions.</span>
+        </div>
+        {/* Payment Summary */}
+        <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
+              <Smartphone className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="text-white font-semibold">Offline Easypaisa Payment</h3>
+              <p className="text-gray-400 text-sm">Manual transfer via mobile wallet</p>
+            </div>
+          </div>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-400">Service:</span>
+              <span className="text-white">{orderData.service} {orderData.option}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Quantity:</span>
+              <span className="text-white">{mounted ? Number.parseInt(orderData.quantity).toLocaleString() : Number.parseInt(orderData.quantity)}</span>
+            </div>
+            <div className="flex justify-between font-semibold border-t border-white/10 pt-2">
+              <span className="text-gray-300">Total Amount:</span>
+              <span className="text-primary">${amount.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+        {/* Offline Payment Instructions */}
+        <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
+          <div className="mb-3">
+            <h4 className="text-white font-medium text-sm mb-1">Send Payment To:</h4>
+            <div className="text-gray-300 text-base font-semibold">03163853822</div>
+            <div className="text-gray-400 text-sm">Muhammad Awais</div>
+          </div>
+          <ol className="text-gray-400 text-xs space-y-1 list-decimal list-inside mb-2">
+            <li>Send the total amount to the Easy Paisa number above.</li>
+            <li>Take a screenshot of your transaction confirmation.</li>
+            <li>Upload the screenshot below to complete your order.</li>
+          </ol>
+        </div>
+        {/* Screenshot Upload */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">Upload Transaction Screenshot *</label>
+          <FileUpload
+            onUploadSuccess={(file: File) => {
+              setOfflineScreenshot(file);
+              setOfflineError(null);
+              setOfflineSuccess(true);
+            }}
+            onUploadError={() => {
+              setOfflineError("Upload failed. Please try again.");
+              setOfflineSuccess(false);
+            }}
+            acceptedFileTypes={["image/png", "image/jpeg", "image/jpg"]}
+            maxFileSize={5 * 1024 * 1024}
+            className="w-full"
+          />
+          {offlineError && <p className="text-red-400 text-sm mt-1 animate-slide-in-right">{offlineError}</p>}
+          {offlineSuccess && <p className="text-green-400 text-sm mt-1 animate-slide-in-right">Screenshot uploaded successfully! Your order will be processed soon.</p>}
+        </div>
+        <Button
+          onClick={async () => {
+            setOfflineError(null);
+            setOfflineSuccess(false);
+            if (!offlineScreenshot) {
+              setOfflineError("Please upload a screenshot of your transaction.");
+              return;
+            }
+            setOfflineUploading(true);
+            try {
+              // Simulate upload and notify parent
+              // You should replace this with actual upload logic
+              setTimeout(() => {
+                setOfflineUploading(false);
+                setOfflineSuccess(true);
+                onPaymentInitiated({
+                  paymentMethod: "offline-easypaisa",
+                  screenshot: offlineScreenshot,
+                  phoneNumber: "03163853822",
+                  holderName: "Muhammad Awais",
+                  amount,
+                  orderData,
+                });
+              }, 1500);
+            } catch {
+              setOfflineUploading(false);
+              setOfflineError("Failed to upload screenshot. Please try again.");
+            }
+          }}
+          disabled={offlineUploading || !offlineScreenshot}
+          className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold text-base md:text-lg py-4 md:py-6 rounded-xl transition-all duration-300 hover:scale-105"
+        >
+          {offlineUploading ? (
+            <>
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              Uploading Screenshot...
+            </>
+          ) : (
+            <>
+              <Smartphone className="w-5 h-5 mr-2" />
+              Submit Offline Payment
+            </>
+          )}
+        </Button>
+      </div>
+    );
   }
 
   return (

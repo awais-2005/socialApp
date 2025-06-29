@@ -3,7 +3,6 @@
 import { useRef, useState, useEffect } from "react"
 import { ShieldCheck, Star, Users, Award, Zap, Clock } from "lucide-react"
 import { useAnimeOnScroll } from "@/hooks/use-anime-on-scroll"
-import { Badge } from "@/components/ui/badge"
 
 const trustFeatures = [
 	{
@@ -53,10 +52,8 @@ const trustFeatures = [
 
 const TrustCard = ({
 	feature,
-	index,
 }: {
 	feature: (typeof trustFeatures)[0]
-	index: number
 }) => {
 	const cardRef = useRef<HTMLDivElement>(null)
 	const [isVisible, setIsVisible] = useState(false)
@@ -122,8 +119,8 @@ export default function TrustSection() {
 					
 				</div>
 				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-					{trustFeatures.map((feature, index) => (
-						<TrustCard key={feature.title} feature={feature} index={index} />
+					{trustFeatures.map((feature) => (
+						<TrustCard key={feature.title} feature={feature} />
 					))}
 				</div>
 			</div>

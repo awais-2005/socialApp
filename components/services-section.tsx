@@ -62,6 +62,7 @@ interface ServiceCardProps {
 	index: number;
 	openModal: (service: SocialService) => void;
 	prices: Record<string, number>;
+	mounted: boolean;
 }
 
 const ServiceCard = ({
@@ -69,6 +70,7 @@ const ServiceCard = ({
 	index,
 	openModal,
 	prices,
+	mounted,
 }: ServiceCardProps) => {
 	const cardRef = useRef(null)
 	const [isVisible, setIsVisible] = useState(false)
@@ -147,21 +149,33 @@ const ServiceCard = ({
 							<span className="text-gray-400">{firstMetricLabel}</span>
 							<span className="text-primary font-semibold">
 								From {symbol}
-								{prices[firstMetricKey] !== undefined ? (prices[firstMetricKey] * rate).toLocaleString(undefined, { maximumFractionDigits: 3 }) : "-"}
+								{mounted && prices[firstMetricKey] !== undefined
+  ? (prices[firstMetricKey] * rate).toLocaleString(undefined, { maximumFractionDigits: 3 })
+  : prices[firstMetricKey] !== undefined
+    ? (prices[firstMetricKey] * rate)
+    : "-"}
 							</span>
 						</div>
 						<div className="flex justify-between items-center text-sm">
 							<span className="text-gray-400">Likes</span>
 							<span className="text-primary font-semibold">
 								From {symbol}
-								{prices.like !== undefined ? (prices.like * rate).toLocaleString(undefined, { maximumFractionDigits: 3 }) : "-"}
+								{mounted && prices.like !== undefined
+  ? (prices.like * rate).toLocaleString(undefined, { maximumFractionDigits: 3 })
+  : prices.like !== undefined
+    ? (prices.like * rate)
+    : "-"}
 							</span>
 						</div>
 						<div className="flex justify-between items-center text-sm">
 							<span className="text-gray-400">Views</span>
 							<span className="text-primary font-semibold">
 								From {symbol}
-								{prices.view !== undefined ? (prices.view * rate).toLocaleString(undefined, { maximumFractionDigits: 3 }) : "-"}
+								{mounted && prices.view !== undefined
+  ? (prices.view * rate).toLocaleString(undefined, { maximumFractionDigits: 3 })
+  : prices.view !== undefined
+    ? (prices.view * rate)
+    : "-"}
 							</span>
 						</div>
 					</div>
@@ -177,6 +191,8 @@ const ServiceCard = ({
 }
 
 export default function ServicesSection() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 	const titleRef = useRef<HTMLElement | null>(null);
 	const socialTitleRef = useRef<HTMLElement | null>(null);
 
@@ -236,6 +252,7 @@ export default function ServicesSection() {
 									index={index}
 									openModal={openModal}
 									prices={servicePrices[platform] || {}}
+									mounted={mounted}
 								/>
 							);
 						})}

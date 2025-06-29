@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { ArrowRight, Check, X, CreditCard, ArrowLeft } from "lucide-react"
 import EasypaisaPaymentForm from "./easypaisa-payment-form"
+import CreditCardOfflinePaymentForm from "./creditcard-offline-payment-form"
 import { getCurrencyInfo } from "./header"
 
 interface ServiceModalProps {
@@ -32,13 +33,7 @@ export default function ServiceModal({ isOpen, onClose, service }: ServiceModalP
   const [hasAnimated, setHasAnimated] = useState(false)
   const [serviceUrl, setServiceUrl] = useState<string>("")
   const [urlError, setUrlError] = useState<string>("")
-  const [formData, setFormData] = useState({
-    // Credit Card
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-    cardholderName: "",
-  })
+  // Removed unused formData state
   const [servicePrices, setServicePrices] = useState<Record<string, Record<string, number>>>({});
 
   useEffect(() => {
@@ -53,12 +48,7 @@ export default function ServiceModal({ isOpen, onClose, service }: ServiceModalP
       setPaymentMethod("")
       setServiceUrl("")
       setUrlError("")
-      setFormData({
-        cardNumber: "",
-        expiryDate: "",
-        cvv: "",
-        cardholderName: "",
-      })
+      
 
       // Fetch latest prices dynamically
       fetch("/service-prices.json")
@@ -179,28 +169,6 @@ export default function ServiceModal({ isOpen, onClose, service }: ServiceModalP
     }, 300)
   }
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-  }
-
-  const handleEasypaisaPayment = (paymentData: Record<string, unknown>) => {
-    console.log("Easypaisa payment initiated:", paymentData)
-    // The form submission to Easypaisa will happen automatically
-    // You can add any additional tracking or analytics here
-  }
-
-  const handleCreditCardPayment = () => {
-    console.log("Processing credit card payment:", {
-      service: service.platform,
-      option: selectedOption,
-      quantity,
-      amount: calculateAmount(),
-      formData,
-    })
-    // Here you would integrate with credit card payment processor
-    onClose()
-  }
-
   const goBack = () => {
     if (currentStep === "details") {
       setCurrentStep("payment")
@@ -210,13 +178,23 @@ export default function ServiceModal({ isOpen, onClose, service }: ServiceModalP
     setIsAnimating(true)
   }
 
-  const serviceOptions = getServiceOptions()
-  const quantityOptions = getQuantityOptions()
-  const totalAmount = calculateAmount()
+  const serviceOptions = getServiceOptions();
+  const quantityOptions = getQuantityOptions();
+  const totalAmount = calculateAmount();
 
   // Get currency info from header utility
   const selectedCountry = (typeof window !== 'undefined' && localStorage.getItem('selectedCountry')) || 'US';
-  const { symbol, rate } = getCurrencyInfo(selectedCountry)
+  const { symbol, rate } = getCurrencyInfo(selectedCountry);
+
+  function handleEasypaisaPayment(paymentData: Record<string, unknown>) {
+    console.log("Easypaisa payment initiated:", paymentData);
+    onClose();
+  }
+
+  // Removed unused handleCreditCardPayment
+
+  // Ensure all required state and handlers are defined and in scope
+  // All state is already defined at the top of ServiceModal
 
   const renderServiceStep = () => {
     return (
@@ -225,7 +203,7 @@ export default function ServiceModal({ isOpen, onClose, service }: ServiceModalP
         <div className={`space-y-4 ${!hasAnimated ? "animate-slide-up animation-delay-300" : ""}`}>
           <h4 className="text-lg md:text-xl font-semibold text-white">Select Service Type:</h4>
           <div className="grid grid-cols-3 gap-2 md:gap-3">
-            {serviceOptions.map((option, index) => (
+            {serviceOptions.map((option: { id: string; label: string; price: number | null; icon: string; unit: string }, index: number) => (
               <button
                 key={option.id}
                 data-option={option.id}
@@ -467,65 +445,20 @@ export default function ServiceModal({ isOpen, onClose, service }: ServiceModalP
           onPaymentInitiated={handleEasypaisaPayment}
           isAnimating={isAnimating}
         />
-      ) : (
-        <div className={`space-y-4 ${isAnimating ? "animate-slide-right animation-delay-200" : ""}`}>
-          <h4 className="text-lg md:text-xl font-semibold text-white">Credit Card Details</h4>
-
-          <div className="space-y-4">
-            <div className={`${isAnimating ? "animate-fade-in-scale animation-delay-300" : ""}`}>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Cardholder Name</label>
-              <Input
-                type="text"
-                placeholder="John Doe"
-                value={formData.cardholderName}
-                onChange={(e) => handleInputChange("cardholderName", e.target.value)}
-                className="w-full bg-rich-black/50 border-white/20 text-white py-3 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300"
-              />
-            </div>
-            <div className={`${isAnimating ? "animate-fade-in-scale animation-delay-400" : ""}`}>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Card Number</label>
-              <Input
-                type="text"
-                placeholder="1234 5678 9012 3456"
-                value={formData.cardNumber}
-                onChange={(e) => handleInputChange("cardNumber", e.target.value)}
-                className="w-full bg-rich-black/50 border-white/20 text-white py-3 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className={`${isAnimating ? "animate-fade-in-scale animation-delay-500" : ""}`}>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Expiry Date</label>
-                <Input
-                  type="text"
-                  placeholder="MM/YY"
-                  value={formData.expiryDate}
-                  onChange={(e) => handleInputChange("expiryDate", e.target.value)}
-                  className="w-full bg-rich-black/50 border-white/20 text-white py-3 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300"
-                />
-              </div>
-              <div className={`${isAnimating ? "animate-fade-in-scale animation-delay-600" : ""}`}>
-                <label className="block text-sm font-medium text-gray-300 mb-2">CVV</label>
-                <Input
-                  type="text"
-                  placeholder="123"
-                  value={formData.cvv}
-                  onChange={(e) => handleInputChange("cvv", e.target.value)}
-                  className="w-full bg-rich-black/50 border-white/20 text-white py-3 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="pb-4 md:pb-6">
-            <Button
-              onClick={handleCreditCardPayment}
-              className={`w-full bg-primary hover:bg-primary/90 text-white font-bold text-base md:text-lg py-4 md:py-6 rounded-xl transition-all duration-300 hover:scale-105 ${isAnimating ? "animate-slide-up animation-delay-700" : ""}`}
-            >
-              Pay {symbol}{(totalAmount * rate).toLocaleString(undefined, { maximumFractionDigits: 2 })} <ArrowRight className="w-4 h-4 md:w-5 md:h-5 ml-2" />
-            </Button>
-          </div>
-        </div>
-      )}
+      ) : paymentMethod === "creditcard" ? (
+        // Simulate online gateway N/A: always show offline for now
+        <CreditCardOfflinePaymentForm
+          amount={totalAmount}
+          orderData={{
+            service: service.platform,
+            option: selectedOption,
+            quantity,
+            serviceUrl,
+          }}
+          onPaymentInitiated={handleEasypaisaPayment}
+          isAnimating={isAnimating}
+        />
+      ) : null}
     </div>
   )
 
@@ -574,7 +507,7 @@ export default function ServiceModal({ isOpen, onClose, service }: ServiceModalP
                         target.style.display = "none"
                         const parent = target.parentElement
                         if (parent) {
-                          parent.innerHTML = `<div class="w-6 h-6 md:w-7 md:h-7 bg-primary rounded flex items-center justify-center text-white font-bold text-xs">${service.platform.charAt(0)}</div>`
+                          parent.innerHTML = `<div class=\"w-6 h-6 md:w-7 md:h-7 bg-primary rounded flex items-center justify-center text-white font-bold text-xs\">${service.platform.charAt(0)}</div>`
                         }
                       }}
                     />
@@ -609,5 +542,6 @@ export default function ServiceModal({ isOpen, onClose, service }: ServiceModalP
         </div>
       </div>
     </>
-  )
+  );
 }
+

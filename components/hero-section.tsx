@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import { Instagram, Twitter, Youtube, Zap, Facebook } from "lucide-react"
 
 const baseClasses = "social-icon absolute w-12 h-12 md:w-14 md:h-14 border border-white/20 rounded-full flex items-center justify-center backdrop-blur-md transform scale-0 opacity-0 transition-all duration-1000 ease-out hover:scale-125 hover:border-white/40";
