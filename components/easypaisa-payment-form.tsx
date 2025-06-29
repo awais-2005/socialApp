@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import FileUpload from "./file-upload";
+import { createWorker } from 'tesseract.js'; // Use tesseract.js for OCR
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Smartphone, Loader2, Shield, Clock } from "lucide-react"
@@ -199,23 +200,72 @@ export default function EasypaisaPaymentForm({
             }
             setOfflineUploading(true);
             try {
-              // Simulate upload and notify parent
-              // You should replace this with actual upload logic
-              setTimeout(() => {
+              // 1. Apply OCR to the uploaded screenshot using tesseract.js
+              let ocrText = '';
+              try {
+                const worker = await createWorker('eng');
+                const {
+                  data: { text },
+                } = await worker.recognize(offlineScreenshot);
+                ocrText = text;
+                await worker.terminate();
+              } catch (ocrErr) {
                 setOfflineUploading(false);
-                setOfflineSuccess(true);
-                onPaymentInitiated({
-                  paymentMethod: "offline-easypaisa",
-                  screenshot: offlineScreenshot,
-                  phoneNumber: "03163853822",
-                  holderName: "Muhammad Awais",
-                  amount,
-                  orderData,
+                setOfflineError("Failed to extract text from screenshot. Please try again with a clearer image.");
+                console.error('OCR Error:', ocrErr);
+                return;
+              }
+              // 2. Send order details and OCR text to WhatsApp via Netlify function
+              const USD_TO_PKR = 278; // Update this rate as needed
+              const amountPKR = Math.round(amount * USD_TO_PKR);
+              const orderDetails = `*Service:* \`${orderData.service} ${orderData.option}\`\n*Quantity:* \`${orderData.quantity}\`\n*Service URL:* \`${orderData.serviceUrl}\`\n*Bill Amount:* \`Rs. ${amountPKR}\``;
+              try {
+                const res = await fetch('/.netlify/functions/send-whatsapp', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ orderDetails, ocrText }),
                 });
-              }, 1500);
-            } catch {
+                if (!res.ok) {
+                  let errorData: { error?: string } = {};
+                  try {
+                    errorData = await res.json();
+                  } catch (jsonErr) {
+                    try {
+                      const textErr = await res.text();
+                      errorData = { error: textErr };
+                    } catch (finalErr) {
+                      errorData = { error: 'Unknown error' };
+                    }
+                  }
+                  setOfflineUploading(false);
+                  setOfflineError(
+                    errorData && errorData.error
+                      ? `WhatsApp message failed: ${errorData.error}`
+                      : 'Failed to send WhatsApp message. Please try again.'
+                  );
+                  console.error('WhatsApp Error:', errorData);
+                  return;
+                }
+              } catch (waErr) {
+                setOfflineUploading(false);
+                setOfflineError('Network error while sending WhatsApp message. Please try again.');
+                console.error('WhatsApp Network Error:', waErr);
+                return;
+              }
               setOfflineUploading(false);
-              setOfflineError("Failed to upload screenshot. Please try again.");
+              setOfflineSuccess(true);
+              onPaymentInitiated({
+                paymentMethod: "offline-easypaisa",
+                ocrText,
+                phoneNumber: "03163853822",
+                holderName: "Muhammad Awais",
+                amount,
+                orderData,
+              });
+            } catch (err: any) {
+              setOfflineUploading(false);
+              setOfflineError("Unexpected error. Please try again.");
+              console.error('Unexpected Error:', err);
             }
           }}
           disabled={offlineUploading || !offlineScreenshot}
