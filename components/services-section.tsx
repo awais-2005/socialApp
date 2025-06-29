@@ -147,36 +147,42 @@ const ServiceCard = ({
 					<div className="space-y-2">
 						<div className="flex justify-between items-center text-sm">
 							<span className="text-gray-400">{firstMetricLabel}</span>
-							<span className="text-primary font-semibold">
-								From {symbol}
-								{mounted && prices[firstMetricKey] !== undefined
-  ? (prices[firstMetricKey] * rate).toLocaleString(undefined, { maximumFractionDigits: 3 })
-  : prices[firstMetricKey] !== undefined
-    ? (prices[firstMetricKey] * rate)
-    : "-"}
-							</span>
+							{mounted && (
+  <span className="text-primary font-semibold">
+    From {symbol}
+    {prices[firstMetricKey] !== undefined
+      ? (prices[firstMetricKey] * rate).toLocaleString(undefined, { maximumFractionDigits: 3 })
+      : prices[firstMetricKey] !== undefined
+        ? (prices[firstMetricKey] * rate)
+        : "-"}
+  </span>
+)}
 						</div>
 						<div className="flex justify-between items-center text-sm">
 							<span className="text-gray-400">Likes</span>
-							<span className="text-primary font-semibold">
-								From {symbol}
-								{mounted && prices.like !== undefined
-  ? (prices.like * rate).toLocaleString(undefined, { maximumFractionDigits: 3 })
-  : prices.like !== undefined
-    ? (prices.like * rate)
-    : "-"}
-							</span>
+							{mounted && (
+  <span className="text-primary font-semibold">
+    From {symbol}
+    {prices.like !== undefined
+      ? (prices.like * rate).toLocaleString(undefined, { maximumFractionDigits: 3 })
+      : prices.like !== undefined
+        ? (prices.like * rate)
+        : "-"}
+  </span>
+)}
 						</div>
 						<div className="flex justify-between items-center text-sm">
 							<span className="text-gray-400">Views</span>
-							<span className="text-primary font-semibold">
-								From {symbol}
-								{mounted && prices.view !== undefined
-  ? (prices.view * rate).toLocaleString(undefined, { maximumFractionDigits: 3 })
-  : prices.view !== undefined
-    ? (prices.view * rate)
-    : "-"}
-							</span>
+							{mounted && (
+  <span className="text-primary font-semibold">
+    From {symbol}
+    {prices.view !== undefined
+      ? (prices.view * rate).toLocaleString(undefined, { maximumFractionDigits: 3 })
+      : prices.view !== undefined
+        ? (prices.view * rate)
+        : "-"}
+  </span>
+)}
 						</div>
 					</div>
 					<div className="mt-4 pt-4 border-t border-white/10">

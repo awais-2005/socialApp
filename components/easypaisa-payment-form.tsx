@@ -18,12 +18,17 @@ interface EasypaisaPaymentFormProps {
   isAnimating?: boolean
 }
 
+import { getCurrencyInfo } from "./header"
+
 export default function EasypaisaPaymentForm({
   amount,
   orderData,
   onPaymentInitiated,
   isAnimating = false,
 }: EasypaisaPaymentFormProps) {
+  // Currency selection
+  const selectedCountry = (typeof window !== 'undefined' && localStorage.getItem('selectedCountry')) || 'US';
+  const { symbol, rate } = getCurrencyInfo(selectedCountry);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -146,9 +151,9 @@ export default function EasypaisaPaymentForm({
               <span className="text-white">{mounted ? Number.parseInt(orderData.quantity).toLocaleString() : Number.parseInt(orderData.quantity)}</span>
             </div>
             <div className="flex justify-between font-semibold border-t border-white/10 pt-2">
-              <span className="text-gray-300">Total Amount:</span>
-              <span className="text-primary">${amount.toFixed(2)}</span>
-            </div>
+  <span className="text-gray-300">Total Amount:</span>
+  <span className="text-primary">{symbol}{(amount * rate).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+</div>
           </div>
         </div>
         {/* Offline Payment Instructions */}

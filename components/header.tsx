@@ -25,7 +25,7 @@ export function getCurrencyInfo(selectedCode: string) {
     IRR: 42000,
     IQD: 1310,
   };
-  const flag = flags.find((f) => f.code === selectedCode) || flags[1]; // default to US
+  const flag = flags.find((f) => f.code === selectedCode) || flags[2]; // default to PK
   return {
     symbol: flag.symbol,
     rate: rates[flag.currency] || 1,
@@ -35,7 +35,7 @@ export function getCurrencyInfo(selectedCode: string) {
 
 export default function Header() {
   const [open, setOpen] = useState(false)
-  const [selected, setSelected] = useState("US")
+  const [selected, setSelected] = useState("PK")
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -46,6 +46,7 @@ export default function Header() {
         headerElement.style.opacity = "1"
       }, 2800)
     }
+
   }, [])
 
   useEffect(() => {
