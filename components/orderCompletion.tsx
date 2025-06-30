@@ -137,7 +137,30 @@ export function OrderConfirmation({
                 </div>
                   <div className="flex justify-between items-center border-t border-border pt-3 mt-3">
                     <p className="text-muted-foreground text-base">Total:</p>
-                    <p className="font-bold text-primary text-lg">${totalBill.toFixed(2)}</p>
+                    {/* Show total in selected currency */}
+                    {(() => {
+                      let symbol = "$";
+                      let rate = 1;
+                      if (typeof window !== "undefined") {
+                        const selectedCountry = localStorage.getItem("selectedCountry") || "US";
+                        try {
+                          // Dynamically require to avoid SSR issues
+                          // eslint-disable-next-line @typescript-eslint/no-var-requires
+                          const { getCurrencyInfo } = require("./header");
+                          const info = getCurrencyInfo(selectedCountry);
+                          symbol = info.symbol || "$";
+                          rate = info.rate || 1;
+                        } catch (e) {
+                          // fallback
+                        }
+                      }
+                      return (
+                        <p className="font-bold text-primary text-lg">
+                          {symbol}{(totalBill * rate).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                        </p>
+                      );
+                    })()}
+
                 </div>
               </div>
 
