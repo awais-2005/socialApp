@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from "react"
 import Image from "next/image"
 import { useAnimeOnScroll } from "@/hooks/use-anime-on-scroll"
 import ServiceModal from "./service-modal"
+import { OrderConfirmation } from "./orderCompletion"
 import { getCurrencyInfo } from "./header"
 import servicePrices from "@/lib/service-prices.json"
 
@@ -197,13 +198,21 @@ const ServiceCard = ({
 }
 
 export default function ServicesSection() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+	const [mounted, setMounted] = useState(false);
+	useEffect(() => setMounted(true), []);
 	const titleRef = useRef<HTMLElement | null>(null);
 	const socialTitleRef = useRef<HTMLElement | null>(null);
 
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [selectedService, setSelectedService] = useState<SocialService | null>(null)
+	// New state for order confirmation
+	const [paymentSuccess, setPaymentSuccess] = useState(false);
+	const [orderDetails, setOrderDetails] = useState<{
+		serviceType: string;
+		platform: string;
+		quantity: number;
+		totalBill: number;
+	} | null>(null);
 
 	const openModal = (service: SocialService) => {
 		setSelectedService(service)
@@ -213,6 +222,23 @@ export default function ServicesSection() {
 	const closeModal = () => {
 		setIsModalOpen(false)
 		setSelectedService(null)
+	}
+
+	// Handler for payment success from ServiceModal
+	function handleOrderConfirmed(details: {
+		serviceType: string;
+		platform: string;
+		quantity: number;
+		totalBill: number;
+	}) {
+		setOrderDetails(details);
+		setPaymentSuccess(true);
+		setIsModalOpen(false);
+	}
+
+	function handleOrderConfirmationClose() {
+		setPaymentSuccess(false);
+		setOrderDetails(null);
 	}
 
 	// Move useAnimeOnScroll to the top level, not inside useEffect or callbacks
@@ -269,7 +295,19 @@ export default function ServicesSection() {
 				isOpen={isModalOpen}
 				onClose={closeModal}
 				service={selectedService}
+				onOrderConfirmed={handleOrderConfirmed}
 			/>
+			{/* OrderConfirmation rendered outside modal */}
+			{paymentSuccess && orderDetails && (
+				<OrderConfirmation
+					isOpen={paymentSuccess}
+					serviceType={orderDetails.serviceType}
+					platform={orderDetails.platform}
+					quantity={orderDetails.quantity}
+					totalBill={orderDetails.totalBill}
+					onClose={handleOrderConfirmationClose}
+				/>
+			)}
 		</section>
 	)
 }

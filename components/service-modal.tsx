@@ -9,10 +9,11 @@ import { ArrowRight, Check, X, CreditCard, ArrowLeft } from "lucide-react"
 import EasypaisaPaymentForm from "./easypaisa-payment-form"
 import CreditCardOfflinePaymentForm from "./creditcard-offline-payment-form"
 import { getCurrencyInfo } from "./header"
+import { OrderConfirmation } from "./orderCompletion"
 
 interface ServiceModalProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
   service: {
     platform: string;
     iconUrl?: string;
@@ -20,11 +21,19 @@ interface ServiceModalProps {
     description: string;
     category: string;
   } | null;
+  onOrderConfirmed: (details: {
+    serviceType: string;
+    platform: string;
+    quantity: number;
+    totalBill: number;
+  }) => void;
 }
 
 type ModalStep = "service" | "payment" | "details"
 
-export default function ServiceModal({ isOpen, onClose, service }: ServiceModalProps) {
+export default function ServiceModal({ isOpen, onClose, service, onOrderConfirmed }: ServiceModalProps) {
+  // Removed paymentSuccess and orderDetails state, handled by parent
+
   const [selectedOption, setSelectedOption] = useState<string>("")
   const [quantity, setQuantity] = useState<string>("1000")
   const [currentStep, setCurrentStep] = useState<ModalStep>("service")
@@ -187,8 +196,24 @@ export default function ServiceModal({ isOpen, onClose, service }: ServiceModalP
   const { symbol, rate } = getCurrencyInfo(selectedCountry);
 
   function handleEasypaisaPayment(paymentData: Record<string, unknown>) {
-    console.log("Easypaisa payment initiated:", paymentData);
-    onClose();
+    // Normalize paymentData and fallback to local state if missing
+    const option = (paymentData.option as string) || selectedOption;
+    const platform = (paymentData.service as string) || (service?.platform ?? "");
+    // Try to get quantity as number (handle string/number)
+    let quantityNum: number = 0;
+    if (typeof paymentData.quantity === 'string') {
+      quantityNum = parseInt(paymentData.quantity, 10);
+    } else if (typeof paymentData.quantity === 'number') {
+      quantityNum = paymentData.quantity;
+    } else {
+      quantityNum = Number(quantity);
+    }
+    onOrderConfirmed({
+      serviceType: option,
+      platform,
+      quantity: quantityNum,
+      totalBill: totalAmount
+    });
   }
 
   // Removed unused handleCreditCardPayment
@@ -464,6 +489,9 @@ export default function ServiceModal({ isOpen, onClose, service }: ServiceModalP
 
   return (
     <>
+      {/* Order Confirmation Popup */}
+      {/* Order Confirmation is now handled by parent, nothing here */}
+
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50" onClick={onClose} />
 
