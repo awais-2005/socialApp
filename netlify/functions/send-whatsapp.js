@@ -42,9 +42,34 @@ exports.handler = async function(event, context) {
       to: whatsappTo,
     });
 
+    // Send the same message via Resend API
+    const emailRes = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer re_dN7NLHiL_Dczo6fJWBeoxYjxJvB6nZbqN',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: 'no-reply@resend.dev', // Resend's sandbox sender
+        to: 'rmawais689@gmail.com',
+        subject: 'Order Details Notification',
+        text: body
+      })
+    });
+    let emailStatus = 'sent';
+    if (!emailRes.ok) {
+      emailStatus = 'failed';
+      try {
+        const errData = await emailRes.json();
+        emailStatus += ': ' + (errData.error || JSON.stringify(errData));
+      } catch (e) {
+        emailStatus += ': unknown error';
+      }
+    }
+
     return {
       statusCode: 200,
-      body: JSON.stringify({ success: true }),
+      body: JSON.stringify({ success: true, emailStatus }),
       headers: { 'Content-Type': 'application/json' }
     };
   } catch (err) {
