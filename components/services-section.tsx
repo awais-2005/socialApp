@@ -1,5 +1,6 @@
 "use client"
 
+import "../styles/services-cards.css";
 import { useRef, useState, useEffect } from "react"
 import Image from "next/image"
 import { useAnimeOnScroll } from "@/hooks/use-anime-on-scroll"
@@ -109,7 +110,7 @@ const ServiceCard = ({
 	return (
 		<div
 			ref={cardRef}
-			className="bg-dark-gray/50 border border-white/10 rounded-2xl p-6 backdrop-blur-xl overflow-hidden relative group hover:border-primary/50 hover:-translate-y-2 cursor-pointer min-h-[280px]"
+			className="bg-dark-gray/50 border border-white/10 rounded-2xl p-6 backdrop-blur-xl overflow-hidden relative group cursor-pointer min-h-[280px] service-card-smooth"
 			onClick={() => openModal(service)}
 			style={{ transitionDelay: `${index * 100}ms` }}
 		>
